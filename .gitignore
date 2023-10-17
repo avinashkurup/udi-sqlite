@@ -1,0 +1,8 @@
+# SQLite source
+sqlite-amalgamation*.zip
+
+# the extension sources (could become submodules)
+sqlite-ulid/*
+
+# the binary
+udi-sqlite
