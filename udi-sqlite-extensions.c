@@ -9,20 +9,7 @@ int udi_sqlite_init_extensions(sqlite3 *db, char **pzErrMsg,
 {
   (void)pzErrMsg;
   SQLITE_EXTENSION_INIT2(pApi);
-
-  // Initialize all static-linked extension here (e.g., ULID)
-  // int rc = sqlite3_ulid_init(db, pzErrMsg, pApi);
-  // if (rc != SQLITE_OK) {
-  //   return rc;
-  // }
-  // don't return result until sqlite3_ulid_init is made FFI-safe
-  // sqlite3_ulid_init(db, pzErrMsg, pApi);
-
-  // If you have more extensions, initialize them here in a similar manner
-
-  // Used from sqlite-ulid/examples/c/demo.c
   int rc = SQLITE_OK;
-  // sqlite3 *db;
   sqlite3_stmt *stmt;
   char *error_message;
 
