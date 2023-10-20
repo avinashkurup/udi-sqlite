@@ -19,6 +19,10 @@ if (!$.fs.existsSync("sqlite-ulid")) {
 }
 await $`cd sqlite-ulid && make static-release`;
 
+if (!$.fs.existsSync("sqlean")) {
+  await $`git clone https://github.com/nalgeon/sqlean`;
+}
+
 const destExe = `udi-sqlite`;
-await $`gcc -o ${destExe} shell.c sqlite3.c udi-sqlite-extensions.c sqlite-ulid/dist/release/libsqlite_ulid0.a -DSQLITE_CORE -DSQLITE_SHELL_INIT_PROC=udi_sqlite_init_extensions -ldl -lpthread -lm`;
+await $`make ${destExe}`;
 await Deno.chmod(destExe, 0o666);
