@@ -16,6 +16,12 @@ Custom distribution of SQLite with enhancements tailored for `udi-service`.
 5. Install [Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
 6. Run `$ cd udi-sqlite` and run `$ ./make.ts`
 
+## To test the udi-sqlite executable.
+
+Run the command `cat udi-sqlite_test.sql | ./udi-sqlite`
+the value printed from the command `echo $?` should be 0 (success).
+
+
 ## TODO.
 1. Fix issue with unzip of cwalk stable zip file in the sqlite-path directory make.ts
 2. CMake Warning: (Fixed)
