@@ -11,33 +11,27 @@ Custom distribution of SQLite with enhancements tailored for `udi-service`.
 1. Clone the repository
 2. Dependencies for building cwalk (required for building sqlite-path extension).
         sudo apt-get install build-essential cmake
-3. cd to the project root and run $ ./make.ts
+3. Install [Rust programming language](https://www.rust-lang.org/tools/install)
+4. Source the cargo binaries path as instructed.
+5. Install [Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
+6. Run `$ cd udi-sqlite` and run `$ ./make.ts`
 
 ## TODO.
-1. Fix issue with unzip of cwalk stable zip file in make.ts
-2. CMake Warning:
+1. Fix issue with unzip of cwalk stable zip file in the sqlite-path directory make.ts
+2. CMake Warning: (Fixed)
         Ignoring extra path from command line:
         ".."
    CMake Error: The source directory "/home/avinash/workspaces/github.com/udi-service/udi-sqlite/cwalk-stable/cwalk" does not appear to contain CMakeLists.txt.
    Specify --help for usage, or press the help button on the CMake GUI.
-3. Faced the error while recursively cloning sqlite-path.
-        Cloning into 'sqlite-path'...
-        remote: Enumerating objects: 647, done.
-        remote: Counting objects: 100% (647/647), done.
-        remote: Compressing objects: 100% (308/308), done.
-        remote: Total 647 (delta 346), reused 575 (delta 274), pack-reused 0
-        Receiving objects: 100% (647/647), 2.53 MiB | 8.13 MiB/s, done.
-        Resolving deltas: 100% (346/346), done.
-        Submodule 'cwalk' (git@github.com:likle/cwalk.git) registered for path 'cwalk'
+3. Faced the error while cloning cwalk submodule sqlite-path. 
         Cloning into '/home/avinash/workspaces/github.com/udi-service/udi-sqlite/sqlite-path/cwalk'...
         git@github.com: Permission denied (publickey).
         fatal: Could not read from remote repository.
 
         Please make sure you have the correct access rights
         and the repository exists.
-        fatal: clone of 'git@github.com:likle/cwalk.git' into submodule path '/home/avinash/workspaces/github.com/udi-service/udi-sqlite/sqlite-path/cwalk' failed
+        fatal: clone of 'git@github.com:likle/cwalk.git' into submodule path '/udi-service/udi-sqlite/sqlite-path/cwalk' failed
         Failed to clone 'cwalk'. Retry scheduled
-        
 4. Work around for the above error by downloading the .zip into sql-path and building cwalk.
 5. Faced compiler errors while building sqlite_path static library, fixed them by adding 
      include sqlite-path/Makefile in the top level Make in order to access 
@@ -59,4 +53,3 @@ make: *** [Makefile:42: udi-sqlite] Error 1
 
         %.o: %.c
            $(CC) -DSQLITE_CORE $(DEFINE_SQLITE_PATH) -I$(CWALK_INCLUDE_DIR) -c $< -o $@ $(SQLITE_PATH_CFLAGS)
-
