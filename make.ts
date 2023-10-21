@@ -4,8 +4,6 @@ import $ from "https://deno.land/x/dax@0.30.1/mod.ts";
 
 const srcURL = `https://www.sqlite.org/2023/sqlite-amalgamation-3430200.zip`;
 const srcFile = $.path.basename(srcURL);
-const cwalkSrcURL = `https://github.com/likle/cwalk/archive/stable.zip`
-const cwalkSrcFile = $.path.basename(cwalkSrcURL)
 
 if (!$.fs.existsSync(srcFile)) {
   await $`curl -L --output ${srcFile} ${srcURL}`;
