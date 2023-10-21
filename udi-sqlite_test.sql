@@ -551,3 +551,7 @@ SELECT
     path_part_at('foo/bar/baz.txt', -1);
 
 -- 'baz.txt'
+--- regex extension tests.
+SELECT
+    regex_find('[0-9]{3}-[0-9]{3}-[0-9]{4}', 'phone: 111-222-3333');
+

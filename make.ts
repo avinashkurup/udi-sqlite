@@ -20,6 +20,11 @@ if (!$.fs.existsSync("sqlite-ulid")) {
 }
 await $`cd sqlite-ulid && make static-release`;
 
+if (!$.fs.existsSync("sqlite-regex")) {
+  await $`git clone https://github.com/asg017/sqlite-regex`;
+}
+await $`cd sqlite-regex && make static-release`;
+
 if (!$.fs.existsSync("sqlean")) {
   await $`git clone https://github.com/nalgeon/sqlean`;
 }

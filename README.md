@@ -44,6 +44,16 @@ the value printed from the command `echo $?` should be 0 (success).
 6. Fix the warnings on compiling the sqlite_path static library.
 7. Added a github issue for compiler errors while building the core_init.c file, https://github.com/asg017/sqlite-path/issues/10.
         workaround by touching the c file by adding a header file to it. To fix this.
+8. Warnings faced while building the Regex extension.
+        warning: unused import: `ffi::c_void`
+  --> src/captures.rs:10:11
+   |
+   | use std::{ffi::c_void, mem, os::raw::c_int};
+   |           ^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+   warning: `sqlite-regex` (lib) generated 1 warning
 
 #ISSUES FACED and fixes.
 
