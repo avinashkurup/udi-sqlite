@@ -13,6 +13,7 @@ if (!$.fs.existsSync(srcFile)) {
 // make sure Rust and other deps are installed
 // sudo apt-get update
 // sudo apt-get install libclang-dev
+// sudo apt-get install build-essential cmake
 
 if (!$.fs.existsSync("sqlite-ulid")) {
   await $`git clone https://github.com/asg017/sqlite-ulid`;
@@ -22,6 +23,19 @@ await $`cd sqlite-ulid && make static-release`;
 if (!$.fs.existsSync("sqlean")) {
   await $`git clone https://github.com/nalgeon/sqlean`;
 }
+
+// Note: manually downloaded the cwalk zip and unzip in sqlite-path dir.
+// ideally this should work from the cwalk submodule. raised this issue.
+// https://github.com/asg017/sqlite-path/issues/9
+if (!$.fs.existsSync("sqlite-path")) {
+  await $`git clone https://github.com/asg017/sqlite-path`;
+}
+if (!$.fs.existsSync("sqlite-path/cwalk/cmake")) {
+  await $`make download_cwalk`
+}
+await $`cd sqlite-path && make dist`
+await $`make sqlite_path`
+await $`make sqlite-path/dist/libsqlite_path0.a`
 
 const destExe = `udi-sqlite`;
 await $`make ${destExe}`;
