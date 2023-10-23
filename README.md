@@ -44,6 +44,16 @@ the value printed from the command `echo $?` should be 0 (success).
 6. Fix the warnings on compiling the sqlite_path static library.
 7. Added a github issue for compiler errors while building the core_init.c file, https://github.com/asg017/sqlite-path/issues/10.
         workaround by touching the c file by adding a header file to it. To fix this.
+8. Warnings faced while building the Regex extension.
+        warning: unused import: `ffi::c_void`
+  --> src/captures.rs:10:11
+   |
+   | use std::{ffi::c_void, mem, os::raw::c_int};
+   |           ^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+   warning: `sqlite-regex` (lib) generated 1 warning
 
 #ISSUES FACED and fixes.
 
@@ -60,9 +70,9 @@ make: *** [Makefile:42: udi-sqlite] Error 1
         %.o: %.c
            $(CC) -DSQLITE_CORE $(DEFINE_SQLITE_PATH) -I$(CWALK_INCLUDE_DIR) -c $< -o $@ $(SQLITE_PATH_CFLAGS)
 
-2. TODO: The issue of functions not found is fixed by fixing the build process, The unit tests are failing as I doubt function names are changed are: I have to check this.
+2. TODO: The issue of functions not found is fixed in the build process, The unit tests are failing as I doubt function names are changed are: I have to check this.
 
-Here is a list of all the `fileio` extension functions called in the unit test provided SQL:
+Here is a list of all the `fileio` extension functions called in the sqlean unit test provided SQL:
 
         1. fileio_ls
         2. fileio_mode
@@ -73,7 +83,7 @@ Here is a list of all the `fileio` extension functions called in the unit test p
         7. fileio_scan
         8. fileio_append
 
-Here is the list of unsupported functions and tables from the provided 'no such function: fileio_xxxx' error:
+Here is the list of unsupported functions which gave the error 'no such function: fileio_xxxx' error:
 
         **Unsupported Functions:**
         1. fileio_mode
@@ -190,3 +200,6 @@ These are based on the recurring errors found in the provided SQL output. You mi
       $ nm sqlean/dist/libsqlite_fileio0.a 
 
       The extension functions contain the {crypto, fileio}_init() functions.
+
+2. The regex extension init function on registration from udi-sqlite-extensions.c gives a SIGSEGV error. On using the static library from the target directory in the project the issue was fixed.
+3. 

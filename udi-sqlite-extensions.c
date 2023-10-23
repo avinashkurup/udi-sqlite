@@ -8,6 +8,8 @@ int sqlite3_crypto_init(sqlite3 *, char **, const sqlite3_api_routines *);
 int sqlite3_path_init(sqlite3 *, char **,
                       const sqlite3_api_routines *);
 int sqlite3_fileio_init(sqlite3 *, char **, const sqlite3_api_routines *);
+int sqlite3_regex_init(sqlite3 *, char **,
+                       const sqlite3_api_routines *);
 
 int udi_sqlite_init_extensions(sqlite3 *db, char **pzErrMsg,
                                const sqlite3_api_routines *pApi)
@@ -46,6 +48,12 @@ int udi_sqlite_init_extensions(sqlite3 *db, char **pzErrMsg,
     sqlite3_close(db);
     return 1;
   }
-
+  rc = sqlite3_auto_extension((void (*)())sqlite3_regex_init);
+  if (rc != SQLITE_OK)
+  {
+    fprintf(stderr, "❌ udi-sqlite-extensions.c could not load sqlite3_crypto_init: %s\n", sqlite3_errmsg(db));
+    sqlite3_close(db);
+    return 1;
+  }
   return SQLITE_OK;
 }

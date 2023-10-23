@@ -38,13 +38,15 @@ $(CRYPTO_STATIC_LIB): $(CRYPTO_OBJ_FILES)
 	$(AR) rcs $(CRYPTO_STATIC_LIB) $(CRYPTO_OBJ_FILES)
 	@echo "Static library creation completed."
 
-udi-sqlite: $(CRYPTO_STATIC_LIB)
+
+udi-sqlite: $(CRYPTO_STATIC_LIB) udi-sqlite-extensions.c
 	gcc -o ./udi-sqlite	\
 		shell.c sqlite3.c udi-sqlite-extensions.c \
 		sqlite-ulid/dist/release/libsqlite_ulid0.a \
 		sqlean/dist/libsqlite_crypto0.a \
 		sqlite-path/dist/libsqlite_path0.a \
 		sqlean/dist/libsqlite_fileio0.a \
+		sqlite-regex/target/release/libsqlite_regex.a \
 		-DSQLITE_CORE -DSQLITE_SHELL_INIT_PROC=udi_sqlite_init_extensions \
 		-ldl -lpthread -lm
 
@@ -102,6 +104,10 @@ $(LIBRARY_NAME): $(SQLITE_PATH_OBJ) $(CWALK_OBJ)
 %.o: %.c
 	@echo "sqlite-path: Compiling $< to $@..."
 	$(CC) -DSQLITE_CORE $(DEFINE_SQLITE_PATH) -I$(CWALK_INCLUDE_DIR) -c $< -o $@ $(SQLITE_PATH_CFLAGS)
+
+# File IO targets.
+SRC_DIR = sqlean/src/fileio
+SRC_SQLITE3_FILEIO_C = sqlean/src/sqlite3-fileio.c
 
 clean_sqlite_path_bins:
 	rm -f $(SQLITE_PATH_OBJ) $(CWALK_OBJ) $(LIBRARY_NAME)

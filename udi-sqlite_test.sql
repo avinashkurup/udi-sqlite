@@ -611,3 +611,9 @@ SELECT
     fileio_append('test_append.txt', 'append content') > 0 AS is_supported;
 
 -- Additional cleanup and validation can be added as needed.
+--- regex extension tests.
+SELECT
+    regex_find('[0-9]{3}-[0-9]{3}-[0-9]{4}', 'phone: 111-222-3333');
+
+SELECT
+    regexset_is_match(regexset("bar", "foo", "barfoo"), 'foobar')
