@@ -555,3 +555,5 @@ SELECT
 SELECT
     regex_find('[0-9]{3}-[0-9]{3}-[0-9]{4}', 'phone: 111-222-3333');
 
+SELECT
+    regexset_is_match(regexset("bar", "foo", "barfoo"), 'foobar')

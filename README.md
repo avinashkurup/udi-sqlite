@@ -69,3 +69,6 @@ make: *** [Makefile:42: udi-sqlite] Error 1
 
         %.o: %.c
            $(CC) -DSQLITE_CORE $(DEFINE_SQLITE_PATH) -I$(CWALK_INCLUDE_DIR) -c $< -o $@ $(SQLITE_PATH_CFLAGS)
+
+2. The init function on access from udi-sqlite-extensions.c gives a SIGSEGV error. On using the static library from the target directory in the project issue was fixed.
+3. 

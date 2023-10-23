@@ -38,12 +38,13 @@ $(CRYPTO_STATIC_LIB): $(CRYPTO_OBJ_FILES)
 	$(AR) rcs $(CRYPTO_STATIC_LIB) $(CRYPTO_OBJ_FILES)
 	@echo "Static library creation completed."
 
-udi-sqlite: $(CRYPTO_STATIC_LIB)
-	gcc -o ./udi-sqlite shell.c sqlite3.c udi-sqlite-extensions.c \
+
+udi-sqlite: $(CRYPTO_STATIC_LIB) udi-sqlite-extensions.c
+	gcc -g -o ./udi-sqlite shell.c sqlite3.c udi-sqlite-extensions.c \
 		sqlite-ulid/dist/release/libsqlite_ulid0.a \
 		sqlean/dist/libsqlite_crypto0.a \
 		sqlite-path/dist/libsqlite_path0.a \
-		sqlite-regex/dist/debug/regex0.a \
+		sqlite-regex/target/release/libsqlite_regex.a \
 		-DSQLITE_CORE -DSQLITE_SHELL_INIT_PROC=udi_sqlite_init_extensions \
 		-ldl -lpthread -lm
 
