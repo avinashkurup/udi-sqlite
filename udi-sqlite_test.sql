@@ -551,3 +551,63 @@ SELECT
     path_part_at('foo/bar/baz.txt', -1);
 
 -- 'baz.txt'
+-- SQLite unit test to verify custom fileio functions
+-- Check if the function fileio_mode is registered
+SELECT
+    'fileio_mode test',
+    fileio_mode(16877) IS NOT NULL AS is_supported;
+
+-- Check if the function lsmode is registered
+SELECT
+    'lsmode test',
+    lsmode(16877) IS NOT NULL AS is_supported;
+
+-- Check if the function fileio_mkdir is registered
+SELECT
+    'fileio_mkdir test',
+    fileio_mkdir('test_dir') IS NULL AS is_supported;
+
+-- Check if the function mkdir is registered
+SELECT
+    'mkdir test',
+    mkdir('test_dir') IS NULL AS is_supported;
+
+-- Check if the function fileio_read is registered
+-- NOTE: Ensure 'test_file.txt' exists in the appropriate directory for this test
+SELECT
+    'fileio_read test',
+    typeof(fileio_read('test_file.txt')) = 'blob' AS is_supported;
+
+-- Check if the function readfile is registered
+SELECT
+    'readfile test',
+    typeof(readfile('test_file.txt')) = 'blob' AS is_supported;
+
+-- Check if the function fileio_symlink is registered
+-- NOTE: Ensure 'test_file.txt' exists in the appropriate directory for this test
+SELECT
+    'fileio_symlink test',
+    fileio_symlink('test_file.txt', 'test_link.lnk') IS NULL AS is_supported;
+
+-- Check if the function symlink is registered
+SELECT
+    'symlink test',
+    symlink('test_file.txt', 'test_link.lnk') IS NULL AS is_supported;
+
+-- Check if the function fileio_write is registered
+SELECT
+    'fileio_write test',
+    fileio_write('test_write_file.txt', 'test content') = LENGTH('test content') AS is_supported;
+
+-- Check if the function writefile is registered
+SELECT
+    'writefile test',
+    writefile('test_write_file2.txt', 'test content') = LENGTH('test content') AS is_supported;
+
+-- Check if the function fileio_append is registered
+-- NOTE: This test assumes the file 'test_append.txt' exists and is of known length
+SELECT
+    'fileio_append test',
+    fileio_append('test_append.txt', 'append content') > 0 AS is_supported;
+
+-- Additional cleanup and validation can be added as needed.

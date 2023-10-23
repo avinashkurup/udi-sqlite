@@ -37,6 +37,8 @@ await $`cd sqlite-path && make dist`
 await $`make sqlite_path`
 await $`make sqlite-path/dist/libsqlite_path0.a`
 
+await $`make fileio_static_lib`
+
 const destExe = `udi-sqlite`;
 await $`make ${destExe}`;
 await Deno.chmod(destExe, 0o666);
