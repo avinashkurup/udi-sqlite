@@ -104,3 +104,46 @@ clean_sqlite_path_bins:
 	rm -f $(SQLITE_PATH_OBJ) $(CWALK_OBJ) $(LIBRARY_NAME)
 
 .PHONY: all clean
+
+# Add html GO compilation target and related vars.
+# Variables
+go_src = sqlite-html
+prefix = $(go_src)/dist
+
+COMMIT=$(shell cd sqlite-html && git rev-parse HEAD)
+VERSION=$(shell cd sqlite-html && cat VERSION)
+DATE=$(shell date +'%FT%TZ%z')
+GO_BUILD_LDFLAGS=-ldflags '-X main.Version=v$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(DATE)'
+GO_BUILD_CGO_CFLAGS=CGO_ENABLED=1 CGO_CFLAGS="-DUSE_LIBSQLITE3"
+
+# Determine OS
+ifeq ($(shell uname -s),Darwin)
+LOADABLE_EXTENSION=a
+else ifeq ($(OS),Windows_NT)
+LOADABLE_EXTENSION=lib
+else
+LOADABLE_EXTENSION=a
+endif
+
+# Directory and target setups
+TARGET_STATIC_LIB=$(prefix)/html0.$(LOADABLE_EXTENSION)
+
+# Targets
+prepare:
+	mkdir -p $(prefix)
+	#cd $(go_src) && go mod init
+
+static_lib: $(TARGET_STATIC_LIB)
+
+$(TARGET_STATIC_LIB):  $(shell find $(go_src) -type f -name '*.go')
+	cd $(go_src) &&	$(GO_BUILD_CGO_CFLAGS) go build -buildmode=c-archive \
+	$(GO_BUILD_LDFLAGS) \
+	-o $@ .
+
+sqlite-html-clean-libs:
+	rm -rf $(prefix)/*
+
+# format:
+# 	gofmt -s -w .
+
+.PHONY: static-lib clean format

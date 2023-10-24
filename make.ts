@@ -27,6 +27,7 @@ if (!$.fs.existsSync("sqlean")) {
 if (!$.fs.existsSync("sqlite-html")) {
   await $`git clone https://github.com/asg017/sqlite-html`;
 }
+await $`cd sqlite-html && make `
 
 // Note: manually downloaded the cwalk zip and unzip in sqlite-path dir.
 // ideally this should work from the cwalk submodule. raised this issue.
