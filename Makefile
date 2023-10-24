@@ -47,6 +47,7 @@ udi-sqlite: $(CRYPTO_STATIC_LIB) udi-sqlite-extensions.c
 		sqlite-path/dist/libsqlite_path0.a \
 		sqlean/dist/libsqlite_fileio0.a \
 		sqlite-regex/target/release/libsqlite_regex.a \
+		sqlite-html/dist/html0.a \
 		-DSQLITE_CORE -DSQLITE_SHELL_INIT_PROC=udi_sqlite_init_extensions \
 		-ldl -lpthread -lm
 
@@ -149,3 +150,47 @@ prepare_fileio_dist:
 clean_fileio_libs:
 	rm sqlean/dist/libsqlite_fileio0.a
 	rm -rf $(FILEIO_SRC_DIR)/*.o
+
+# Add html GO compilation target and related vars.
+# Variables
+go_src = sqlite-html
+#prefix = $(go_src)/dist
+prefix = dist
+
+COMMIT=$(shell cd $(go_src) && git rev-parse HEAD)
+VERSION=$(shell cd $(go_src) && cat VERSION)
+DATE=$(shell date +'%FT%TZ%z')
+GO_BUILD_LDFLAGS=-ldflags '-X main.Version=v$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(DATE)'
+GO_BUILD_CGO_CFLAGS=CGO_ENABLED=1 CGO_CFLAGS="-DUSE_LIBSQLITE3"
+
+# Determine OS
+ifeq ($(shell uname -s),Darwin)
+LOADABLE_EXTENSION=a
+else ifeq ($(OS),Windows_NT)
+LOADABLE_EXTENSION=lib
+else
+LOADABLE_EXTENSION=a
+endif
+
+# Directory and target setups
+TARGET_STATIC_LIB=$(prefix)/html0.$(LOADABLE_EXTENSION)
+
+# Targets
+prepare:
+	mkdir -p $(prefix)
+	#cd $(go_src) && go mod init
+
+static_lib: $(TARGET_STATIC_LIB)
+
+$(TARGET_STATIC_LIB):  $(shell find $(go_src) -type f -name '*.go')
+	cd $(go_src) &&	$(GO_BUILD_CGO_CFLAGS) go build -buildmode=c-archive \
+	$(GO_BUILD_LDFLAGS) \
+	-o $@ .
+
+sqlite_html_clean_libs:
+	rm -rf $(prefix)/*
+
+# format:
+# 	gofmt -s -w .
+
+.PHONY: static-lib clean format

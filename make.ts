@@ -44,6 +44,11 @@ await $`make sqlite-path/dist/libsqlite_path0.a`
 
 await $`make fileio_static_lib`
 
+if (!$.fs.existsSync("sqlite-html")) {
+  await $`git clone https://github.com/asg017/sqlite-html`;
+}
+await $`make prepare && make static_lib`
+
 const destExe = `udi-sqlite`;
 await $`make ${destExe}`;
 await Deno.chmod(destExe, 0o666);
