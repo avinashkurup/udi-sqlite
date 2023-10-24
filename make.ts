@@ -7,7 +7,7 @@ const srcFile = $.path.basename(srcURL);
 
 if (!$.fs.existsSync(srcFile)) {
   await $`curl -L --output ${srcFile} ${srcURL}`;
-  await $`unzip -j ${srcFile}`;
+  await $`unzip -j -o ${srcFile}`;
 }
 
 // make sure Rust and other deps are installed
