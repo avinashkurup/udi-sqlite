@@ -35,7 +35,7 @@ jobs:
           override: true
 
       - name: Initiate Build with Deno
-        run: deno run --allow-read --allow-write --allow-env --allow-run --allow-sys -allow-net make.ts
+        run: deno run --allow-read --allow-write --allow-env --allow-run --allow-sys --allow-net make.ts
 
       - name: Create Release
         id: create_release
