@@ -29,11 +29,6 @@ if (!$.fs.existsSync("sqlean")) {
   await $`git clone https://github.com/nalgeon/sqlean`;
 }
 
-if (!$.fs.existsSync("sqlite-html")) {
-  await $`git clone https://github.com/asg017/sqlite-html`;
-}
-await $`make prepare && make static_lib`
-
 // Note: manually downloaded the cwalk zip and unzip in sqlite-path dir.
 // ideally this should work from the cwalk submodule. raised this issue.
 // https://github.com/asg017/sqlite-path/issues/9
@@ -48,6 +43,11 @@ await $`make sqlite_path`
 await $`make sqlite-path/dist/libsqlite_path0.a`
 
 await $`make fileio_static_lib`
+
+if (!$.fs.existsSync("sqlite-html")) {
+  await $`git clone https://github.com/asg017/sqlite-html`;
+}
+await $`make prepare && make static_lib`
 
 const destExe = `udi-sqlite`;
 await $`make ${destExe}`;
