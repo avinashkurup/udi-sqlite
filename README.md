@@ -202,4 +202,11 @@ These are based on the recurring errors found in the provided SQL output. You mi
       The extension functions contain the {crypto, fileio}_init() functions.
 
 2. The regex extension init function on registration from udi-sqlite-extensions.c gives a SIGSEGV error. On using the static library from the target directory in the project the issue was fixed.
-3. 
+3. Faced the following error in integration of http and execution of sql:
+        SQLite version 3.43.2 2023-10-10 12:14:04
+        Enter ".help" for usage hints.
+        Connected to a transient in-memory database.
+        Use ".open FILENAME" to reopen on a persistent database.
+        sqlite> SELECT
+        http_get_body('https://text.npr.org/');   ...> 
+        Error: unable to open database ":memory:": automatic extension loading failed: no extension with name 'http' registered

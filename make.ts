@@ -47,7 +47,14 @@ await $`make fileio_static_lib`
 if (!$.fs.existsSync("sqlite-html")) {
   await $`git clone https://github.com/asg017/sqlite-html`;
 }
-await $`make prepare && make static_lib`
+await $`make html-prepare-dist && make dist/html0.a`
+//await $`make prepare && make static_lib` // working version.
+
+if (!$.fs.existsSync("sqlite-http")) {
+  await $`git clone https://github.com/asg017/sqlite-http`;
+}
+await $`make http-prepare-dist && make dist/http0.a`
+// await $`make prepare_http_dist && make http_static_lib`
 
 const destExe = `udi-sqlite`;
 await $`make ${destExe}`;

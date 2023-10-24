@@ -152,161 +152,89 @@ clean_fileio_libs:
 	rm sqlean/dist/libsqlite_fileio0.a
 	rm -rf $(FILEIO_SRC_DIR)/*.o
 
-# # Add html GO compilation target and related vars.
-# # Variables
-# go_src = sqlite-html
-# #prefix = $(go_src)/dist
-# prefix = dist
+# Add html GO compilation target and related vars.
+# Variables
+go_src = sqlite-html
+#prefix = $(go_src)/dist
+prefix = dist
 
-# COMMIT=$(shell cd $(go_src) && git rev-parse HEAD)
-# VERSION=$(shell cd $(go_src) && cat VERSION)
-# DATE=$(shell date +'%FT%TZ%z')
-# GO_BUILD_LDFLAGS=-ldflags '-X main.Version=v$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(DATE)'
-# GO_BUILD_CGO_CFLAGS=CGO_ENABLED=1 CGO_CFLAGS="-DUSE_LIBSQLITE3"
-# #GO_BUILD_CGO_CFLAGS=CGO_CFLAGS=-DSQLITE3_INIT_FN=sqlite3_html_init
-
-# # Determine OS
-# ifeq ($(shell uname -s),Darwin)
-# LOADABLE_EXTENSION=a
-# else ifeq ($(OS),Windows_NT)
-# LOADABLE_EXTENSION=lib
-# else
-# LOADABLE_EXTENSION=a
-# endif
-
-# # Directory and target setups
-# TARGET_STATIC_LIB=$(prefix)/html0.$(LOADABLE_EXTENSION)
-
-# # Targets
-# prepare:
-# 	mkdir -p $(prefix)
-
-# static_lib: $(TARGET_STATIC_LIB)
-
-# $(TARGET_STATIC_LIB):  $(shell find $(go_src) -type f -name '*.go')
-# 	cd $(go_src) &&	$(GO_BUILD_CGO_CFLAGS) go build -buildmode=c-archive \
-# 	$(GO_BUILD_LDFLAGS) \
-# 	-o $@ .
-
-# sqlite_html_clean_libs:
-# 	rm -rf $(prefix)/*
-
-# # format:
-# # 	gofmt -s -w .
-
-# .PHONY: static-lib clean format
-
-# # Add http extension, GO compilation target and related vars.
-# # Variables
-
-# HTTP_GO_SRC_DIR = sqlite-http
-# #GO_FILES= ./cookies.go ./settings.go ./do.go ./shared.go ./meta.go ./headers.go
-# #prefix = $(HTTP_GO_SRC_DIR)/dist
-# prefix = dist
-
-# # HTTP_EXT_COMMIT=$(shell cd $(HTTP_GO_SRC_DIR) && git rev-parse HEAD)
-# # HTTP_EXT_VERSION=$(shell cd $(HTTP_GO_SRC_DIR) && cat VERSION)
-# # HTTP_DATE=$(shell date +'%FT%TZ%z')
-# # GO_BUILD_LDFLAGS=-ldflags '-X main.Version=v$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(DATE)'
-# # GO_BUILD_CGO_CFLAGS=CGO_ENABLED=1 CGO_CFLAGS="-DUSE_LIBSQLITE3"
-
-# HTTP_GO_BUILD_CGO_CFLAGS=CGO_CFLAGS=-DSQLITE3_INIT_FN=sqlite3_http_init
-
-# # Determine OS
-# ifeq ($(shell uname -s),Darwin)
-# LOADABLE_EXTENSION=a
-# else ifeq ($(OS),Windows_NT)
-# LOADABLE_EXTENSION=lib
-# else
-# LOADABLE_EXTENSION=a
-# endif
-
-# # Directory and target setups
-# TARGET_STATIC_LIB=$(prefix)/libsqlite_http0.$(LOADABLE_EXTENSION)
-
-# # Targets
-# prepare_http_dist:
-# 	mkdir -p $(HTTP_GO_SRC_DIR)/$(prefix)
-
-# http_static_lib: $(TARGET_STATIC_LIB)
-
-# $(TARGET_STATIC_LIB):  $(shell find $(HTTP_GO_SRC_DIR) -type f -name '*.go')
-# 	cd $(HTTP_GO_SRC_DIR) && $(HTTP_GO_BUILD_CGO_CFLAGS) go build -buildmode=c-archive \
-# 	$(GO_BUILD_LDFLAGS) \
-# 	-o $@ .
-
-# # $(TARGET_STATIC_LIB):  $(GO_FILES)
-# # 	cd $(HTTP_GO_SRC_DIR_DIR) && $(GO_BUILD_CGO_CFLAGS) CGO_ENABLED=1 go build -buildmode=c-archive \
-# # 	$(GO_BUILD_LDFLAGS) \
-# # 	-o $@ .
-
-# sqlite_http_clean_libs:
-# 	rm -rf $(HTTP_GO_SRC_DIR)/$(prefix)/*
-
-# # format:
-# # 	gofmt -s -w .
-
-
-# BEGIN ChatGPT suggested http and html extension Make targets. For compiling Go.
-
-COMMIT=$(shell git rev-parse HEAD)
-VERSION=$(shell git describe --tags --exact-match --always)
-VERSION=$(shell cat VERSION)
+COMMIT=$(shell cd $(go_src) && git rev-parse HEAD)
+VERSION=$(shell cd $(go_src) && cat VERSION)
 DATE=$(shell date +'%FT%TZ%z')
-
-VENDOR_SQLITE=$(shell pwd)/sqlite
-#GO_BUILD_LDFLAGS=-ldflags '-X main.Version=v$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(DATE)'
 GO_BUILD_LDFLAGS=-ldflags '-X main.Version=v$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(DATE)'
-GO_BUILD_CGO_CFLAGS=CGO_ENABLED=1 CGO_CFLAGS="-DUSE_LIBSQLITE3" CPATH="$(VENDOR_SQLITE)"
+GO_BUILD_CGO_CFLAGS=CGO_ENABLED=1 CGO_CFLAGS="-DUSE_LIBSQLITE3"
 
-# html
-# linux LDFLAGS: -Wl,--unresolved-symbols=ignore-in-object-files
+# Determine OS
+ifeq ($(shell uname -s),Darwin)
+LOADABLE_EXTENSION=a
+else ifeq ($(OS),Windows_NT)
+LOADABLE_EXTENSION=lib
+else
+LOADABLE_EXTENSION=a
+endif
 
-# http
-# linux LDFLAGS: -Wl,--unresolved-symbols=ignore-in-object-files
-prefix=dist
+# Directory and target setups
+TARGET_STATIC_LIB=$(prefix)/html0.$(LOADABLE_EXTENSION)
 
-TARGET_STATIC_LIB_HTML=$(prefix)/html0.a
-TARGET_STATIC_LIB_HTTP=$(prefix)/http0.a
+# Targets
+prepare:
+	mkdir -p $(prefix)
 
-GO_FILES_HTML= $(shell find . -type f -name '*.go')
-GO_FILES_HTTP= ./cookies.go ./settings.go ./do.go ./shared.go ./meta.go ./headers.go
+static_lib: $(TARGET_STATIC_LIB)
 
-HTML_SRC_DIR = sqlite-html
-HTTP_SRC_DIR = sqlite-http
-
-# $(prefix):
-# 	mkdir -p $(prefix)
-
-html-prepare-dist:
-	mkdir -p $(HTML_SRC_DIR)/$(prefix)
-
-http-prepare-dist:
-	mkdir -p $(HTTP_SRC_DIR)/$(prefix)
-
-$(TARGET_STATIC_LIB_HTML): $(GO_FILES_HTML)
-	cd $(HTML_SRC_DIR) && $(GO_BUILD_CGO_CFLAGS) go build \
-	-buildmode=c-archive -o $@ \
+$(TARGET_STATIC_LIB):  $(shell find $(go_src) -type f -name '*.go')
+	cd $(go_src) &&	$(GO_BUILD_CGO_CFLAGS) go build -buildmode=c-archive \
 	$(GO_BUILD_LDFLAGS) \
-	.
+	-o $@ .
 
-$(TARGET_STATIC_LIB_HTTP): $(GO_FILES_HTTP)
-	cd $(HTTP_SRC_DIR) && $(GO_BUILD_CGO_CFLAGS) go build \
-	-buildmode=c-archive -o $@ \
+sqlite_html_clean_libs:
+	rm -rf $(prefix)/*
+
+# format:
+# 	gofmt -s -w .
+
+.PHONY: static-lib clean format
+
+# Add http extension, GO compilation target and related vars.
+# Variables
+
+HTTP_GO_SRC = sqlite-http
+#prefix = $(HTTP_GO_SRC)/dist
+prefix = dist
+
+COMMIT=$(shell cd $(HTTP_GO_SRC) && git rev-parse HEAD)
+VERSION=$(shell cd $(HTTP_GO_SRC) && cat VERSION)
+DATE=$(shell date +'%FT%TZ%z')
+GO_BUILD_LDFLAGS=-ldflags '-X main.Version=v$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(DATE)'
+GO_BUILD_CGO_CFLAGS=CGO_ENABLED=1 CGO_CFLAGS="-DUSE_LIBSQLITE3"
+
+# Determine OS
+ifeq ($(shell uname -s),Darwin)
+LOADABLE_EXTENSION=a
+else ifeq ($(OS),Windows_NT)
+LOADABLE_EXTENSION=lib
+else
+LOADABLE_EXTENSION=a
+endif
+
+# Directory and target setups
+TARGET_STATIC_LIB=$(prefix)/libsqlite_http0.$(LOADABLE_EXTENSION)
+
+# Targets
+prepare_http_dist:
+	mkdir -p $(prefix)
+
+http_static_lib: $(TARGET_STATIC_LIB)
+
+$(TARGET_STATIC_LIB):  $(shell find $(HTTP_GO_SRC) -type f -name '*.go')
+	cd $(HTTP_GO_SRC) &&	$(GO_BUILD_CGO_CFLAGS) go build -buildmode=c-archive \
 	$(GO_BUILD_LDFLAGS) \
-	.
+	-o $@ .
 
-all: $(TARGET_STATIC_LIB_HTML) $(TARGET_STATIC_LIB_HTTP)
+sqlite_http_clean_libs:
+	rm -rf $(prefix)/*
 
-clean_html:
-	rm -rf $(HTML_SRC_DIR)/$(prefix)/*
-
-clean_http:
-	rm -rf $(HTTP_SRC_DIR)/$(prefix)/*
-
-.PHONY: all clean
-
-
-# END ChatGPT suggested http extension Make targets.
+# format:
+# 	gofmt -s -w .
 
 .PHONY: static-lib clean format

@@ -627,3 +627,26 @@ SELECT
     html_element('p', NULL, 'Luke, I am your', html_element('b', NULL, 'father'), '!', html_element('img', json_object('src', 'https://images.dog.ceo/breeds/groenendael/n02105056_4600.jpg', 'width', 200)));
 
 -- "<p>Luke, I am your<b>father</b>!<img src="https://images.dog.ceo/breeds/groenendael/n02105056_4600.jpg" width="200.000000"/></p>"
+--- Test http extension.
+SELECT
+    http_get_body('https://text.npr.org/');
+
+
+/*
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <title>NPR : National Public Radio</title>
+ ....
+ */
+SELECT
+    http_get_body('https://api.github.com/repos/sqlite/sqlite') ->> '$.description' AS description;
+
+
+/*
+┌───────────────────────────────────────────────┐
+│                  description                  │
+├───────────────────────────────────────────────┤
+│ Official Git mirror of the SQLite source tree │
+└───────────────────────────────────────────────┘
+ */
