@@ -616,4 +616,14 @@ SELECT
     regex_find('[0-9]{3}-[0-9]{3}-[0-9]{4}', 'phone: 111-222-3333');
 
 SELECT
-    regexset_is_match(regexset("bar", "foo", "barfoo"), 'foobar')
+    regexset_is_match(regexset("bar", "foo", "barfoo"), 'foobar');
+
+--- Test html extension.
+SELECT
+    html_extract('<p> Anakin <b>Skywalker</b> </p>', 'b');
+
+-- "<b>Skywalker</b>"
+SELECT
+    html_element('p', NULL, 'Luke, I am your', html_element('b', NULL, 'father'), '!', html_element('img', json_object('src', 'https://images.dog.ceo/breeds/groenendael/n02105056_4600.jpg', 'width', 200)));
+
+-- "<p>Luke, I am your<b>father</b>!<img src="https://images.dog.ceo/breeds/groenendael/n02105056_4600.jpg" width="200.000000"/></p>"
