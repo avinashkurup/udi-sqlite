@@ -20,6 +20,11 @@ if (!$.fs.existsSync("sqlite-ulid")) {
 }
 await $`cd sqlite-ulid && make static-release`;
 
+if (!$.fs.existsSync("sqlite-regex")) {
+  await $`git clone https://github.com/asg017/sqlite-regex`;
+}
+await $`cd sqlite-regex && make static-release`;
+
 if (!$.fs.existsSync("sqlean")) {
   await $`git clone https://github.com/nalgeon/sqlean`;
 }
@@ -41,6 +46,8 @@ if (!$.fs.existsSync("sqlite-path/cwalk/cmake")) {
 await $`cd sqlite-path && make dist`
 await $`make sqlite_path`
 await $`make sqlite-path/dist/libsqlite_path0.a`
+
+await $`make fileio_static_lib`
 
 const destExe = `udi-sqlite`;
 await $`make ${destExe}`;
