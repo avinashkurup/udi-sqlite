@@ -47,6 +47,7 @@ udi-sqlite: $(CRYPTO_STATIC_LIB) udi-sqlite-extensions.c
 		sqlite-path/dist/libsqlite_path0.a \
 		sqlean/dist/libsqlite_fileio0.a \
 		sqlite-regex/target/release/libsqlite_regex.a \
+		sqlite-html/dist/html0.a \
 		-DSQLITE_CORE -DSQLITE_SHELL_INIT_PROC=udi_sqlite_init_extensions \
 		-ldl -lpthread -lm
 
@@ -153,10 +154,11 @@ clean_fileio_libs:
 # Add html GO compilation target and related vars.
 # Variables
 go_src = sqlite-html
-prefix = $(go_src)/dist
+#prefix = $(go_src)/dist
+prefix = dist
 
-COMMIT=$(shell cd sqlite-html && git rev-parse HEAD)
-VERSION=$(shell cd sqlite-html && cat VERSION)
+COMMIT=$(shell cd $(go_src) && git rev-parse HEAD)
+VERSION=$(shell cd $(go_src) && cat VERSION)
 DATE=$(shell date +'%FT%TZ%z')
 GO_BUILD_LDFLAGS=-ldflags '-X main.Version=v$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(DATE)'
 GO_BUILD_CGO_CFLAGS=CGO_ENABLED=1 CGO_CFLAGS="-DUSE_LIBSQLITE3"
@@ -185,7 +187,7 @@ $(TARGET_STATIC_LIB):  $(shell find $(go_src) -type f -name '*.go')
 	$(GO_BUILD_LDFLAGS) \
 	-o $@ .
 
-sqlite-html-clean-libs:
+sqlite_html_clean_libs:
 	rm -rf $(prefix)/*
 
 # format:
