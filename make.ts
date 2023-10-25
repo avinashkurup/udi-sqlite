@@ -25,8 +25,10 @@ if (!$.fs.existsSync("sqlite-regex")) {
 }
 await $`cd sqlite-regex && make static-release`;
 
+// Note: Fixing a release as we're patching the sqlean fileio default initialization function name in shell.c
 if (!$.fs.existsSync("sqlean")) {
   await $`git clone https://github.com/nalgeon/sqlean`;
+  await $`cd sqlean && git checkout tags/0.21.8 && git checkout -b release_0_21_8 tags/0.21.8`
 }
 
 // Note: manually downloaded the cwalk zip and unzip in sqlite-path dir.
