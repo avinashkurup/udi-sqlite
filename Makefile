@@ -38,6 +38,7 @@ $(CRYPTO_STATIC_LIB): $(CRYPTO_OBJ_FILES)
 	$(AR) rcs $(CRYPTO_STATIC_LIB) $(CRYPTO_OBJ_FILES)
 	@echo "Static library creation completed."
 
+UDI_TEST_STATIC_OBJ_FILE = udi-tap/libsqlite_uditap0.a
 
 udi-sqlite: $(CRYPTO_STATIC_LIB) udi-sqlite-extensions.c
 	gcc -o ./udi-sqlite	\
@@ -48,8 +49,50 @@ udi-sqlite: $(CRYPTO_STATIC_LIB) udi-sqlite-extensions.c
 		sqlean/dist/libsqlite_fileio0.a \
 		sqlite-regex/target/release/libsqlite_regex.a \
 		sqlite-html/dist/html0.a \
+		$(UDI_TEST_STATIC_OBJ_FILE) \
 		-DSQLITE_CORE -DSQLITE_SHELL_INIT_PROC=udi_sqlite_init_extensions \
 		-ldl -lpthread -lm
+
+INCLUDED_EXTENSIONS := sqlean-fileio sqlean-crypto sqlite-html sqlite-path sqlite-regex sqlite-ulid
+SQLEAN_TEST_DIR := sqlean/test
+
+# Use jq to read the json file and run the test files.
+run-tests: udi-sqlite
+	@for dir in $(INCLUDED_EXTENSIONS); do \
+		TESTS=$$(find $$dir -type f -name "*.sql"); \
+		for test in $$TESTS; do \
+			if ! cat $$test | ./udi-sqlite; then \
+				echo "Test $$test failed!"; \
+			fi; \
+		done; \
+	done
+
+# run-tests: udi-sqlite
+# 	@repos=$$(jq 'keys | .[]' extensions.json); \
+# 	for repo in $$repos; do \
+# 		dir_name=$$(echo $$repo | sed -e 's/https:\/\/github.com\///' -e 's/\//-/g'); \
+# 		if [ "$$dir_name" = "nalgeon-sqlean" ]; then \
+# 			extensions=$$(jq --raw-output '."$$repo".extensions | .[]' extensions.json); \
+# 			for extension in $$extensions; do \
+# 				TESTS=$$(find $$dir_name/$$extension -type f -name "*.sql" -o -name "*.python"); \
+# 				for test in $$TESTS; do \
+# 					cat $$test | ./udi-sqlite; \
+# 					if [ $$? -ne 0 ]; then \
+# 						echo "Test $$test failed!"; \
+# 					fi; \
+# 				done; \
+# 			done; \
+# 		else \
+# 			TEST_DIRECTORY=$$(jq --raw-output '."$$repo".test_directory // "."' extensions.json); \
+# 			TESTS=$$(find $$dir_name/$$TEST_DIRECTORY -type f -name "*.sql" -o -name "*.python"); \
+# 			for test in $$TESTS; do \
+# 				cat $$test | ./udi-sqlite; \
+# 				if [ $$? -ne 0 ]; then \
+# 					echo "Test $$test failed!"; \
+# 				fi; \
+# 			done; \
+# 		fi; \
+# 	done
 
 CWALK_SRCS_URL = "https://github.com/likle/cwalk/archive/stable.zip"
 SQLITE_PATH_SRC_DIR = sqlite-path

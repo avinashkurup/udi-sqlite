@@ -5,52 +5,151 @@ import $ from "https://deno.land/x/dax@0.30.1/mod.ts";
 const srcURL = `https://www.sqlite.org/2023/sqlite-amalgamation-3430200.zip`;
 const srcFile = $.path.basename(srcURL);
 
-if (!$.fs.existsSync(srcFile)) {
-  await $`curl -L --output ${srcFile} ${srcURL}`;
-  await $`unzip -j -o ${srcFile}`;
+const repo_sub_extensions: { 
+  [key: string]: string[] | { extensions: string[], python_test_directory?: string, sql_test_directory?: string, test_file?: string } 
+} = {
+  "https://github.com/nalgeon/sqlean": {extensions: ["fileio", "crypto"], sql_test_directory: "sqlean/test"}, // No test_directory specified; assume a default
+  "https://github.com/asg017/sqlite-ulid": {
+    extensions: ["ulid"],
+    test_file: "sqlite-ulid/test.sql"
+  },
+  "https://github.com/asg017/sqlite-regex": {extensions: ["regex"], python_test_directory: "sqlite-regex/tests"}, // No test_directory specified
+  "https://github.com/asg017/sqlite-path": {extensions: ["path"], python_test_directory: "sqlite-path/tests"},   // No test_directory specified
+  "https://github.com/asg017/sqlite-html": {
+    extensions: ["html"],
+    python_test_directory: "sqlite-html/tests", test_file: "test-python.py"
+  },
+};
+
+// Convert the object to a JSON string
+const jsonString = JSON.stringify(repo_sub_extensions, null, 2); // 2 spaces for indentation
+
+// Write the JSON string to a file
+await Deno.writeTextFile("repo_sub_extensions.json", jsonString);
+
+// Traverse the object
+for (const [repo, extensions] of Object.entries(repo_sub_extensions)) {
+  const repoName = repo.split('/').pop();
+
+  console.log(`Downloading Repo: ${repo}`);
+
+  switch (repoName) {
+    case 'sqlean':
+      if (!$.fs.existsSync("sqlean")) {
+        await $`git clone https://github.com/nalgeon/sqlean`;
+        await $`cd sqlean && git checkout tags/0.21.8 && git checkout -b release_0_21_8 tags/0.21.8`;
+      }
+      break;
+
+    case 'sqlite-ulid':
+      if (!$.fs.existsSync("sqlite-ulid")) {
+        await $`git clone https://github.com/asg017/sqlite-ulid`;
+      }
+      await $`cd sqlite-ulid && make static-release`;
+      break;
+
+    case 'sqlite-regex':
+      if (!$.fs.existsSync("sqlite-regex")) {
+        await $`git clone https://github.com/asg017/sqlite-regex`;
+      }
+      await $`cd sqlite-regex && make static-release`;
+      break;
+
+    case 'sqlite-path':
+      // Note: manually downloaded the cwalk zip and unzip in sqlite-path dir.
+      // ideally this should work from the cwalk submodule. raised this issue.
+      // https://github.com/asg017/sqlite-path/issues/9
+      if (!$.fs.existsSync("sqlite-path")) {
+        await $`git clone https://github.com/asg017/sqlite-path`;
+      }
+      if (!$.fs.existsSync("sqlite-path/cwalk/cmake")) {
+        await $`make download_cwalk`
+      }
+      await $`cd sqlite-path && make dist`
+      await $`make sqlite_path`
+      await $`make sqlite-path/dist/libsqlite_path0.a`
+
+      // Figure out why?
+      await $`make fileio_static_lib`
+      break;
+
+    case 'sqlite-html':
+      if (!$.fs.existsSync("sqlite-html")) {
+        await $`git clone https://github.com/asg017/sqlite-html`;
+      }
+      await $`make prepare && make static_lib`
+      break;
+
+    // ... Add more cases if necessary
+
+    default:
+      console.log(`No logic defined for repo: ${repoName}`);
+      break;
+  }
+
+  if (!Array.isArray(extensions) && extensions.sql_test_directory) {
+    console.log(`Using test directory: ${extensions.sql_test_directory}`);
+  }
 }
 
-// make sure Rust and other deps are installed
-// sudo apt-get update
-// sudo apt-get install libclang-dev
-// sudo apt-get install build-essential cmake
-
-if (!$.fs.existsSync("sqlite-ulid")) {
-  await $`git clone https://github.com/asg017/sqlite-ulid`;
-}
-await $`cd sqlite-ulid && make static-release`;
-
-if (!$.fs.existsSync("sqlite-regex")) {
-  await $`git clone https://github.com/asg017/sqlite-regex`;
-}
-await $`cd sqlite-regex && make static-release`;
-
-// Note: Fixing a release as we're patching the sqlean fileio default initialization function name in shell.c
-if (!$.fs.existsSync("sqlean")) {
-  await $`git clone https://github.com/nalgeon/sqlean`;
-  await $`cd sqlean && git checkout tags/0.21.8 && git checkout -b release_0_21_8 tags/0.21.8`
-}
-
-// Note: manually downloaded the cwalk zip and unzip in sqlite-path dir.
-// ideally this should work from the cwalk submodule. raised this issue.
-// https://github.com/asg017/sqlite-path/issues/9
-if (!$.fs.existsSync("sqlite-path")) {
-  await $`git clone https://github.com/asg017/sqlite-path`;
-}
-if (!$.fs.existsSync("sqlite-path/cwalk/cmake")) {
-  await $`make download_cwalk`
-}
-await $`cd sqlite-path && make dist`
-await $`make sqlite_path`
-await $`make sqlite-path/dist/libsqlite_path0.a`
-
-await $`make fileio_static_lib`
-
-if (!$.fs.existsSync("sqlite-html")) {
-  await $`git clone https://github.com/asg017/sqlite-html`;
-}
-await $`make prepare && make static_lib`
+await $`cd udi-tap && make`
 
 const destExe = `udi-sqlite`;
 await $`make ${destExe}`;
 await Deno.chmod(destExe, 0o666);
+
+// The type of `urls` is now a readonly tuple: readonly ["https://example.com", "https://github.com/asg017/sqlite-ulid", "https://deno.land"]
+
+
+// if (!$.fs.existsSync(srcFile)) {
+//   await $`curl -L --output ${srcFile} ${srcURL}`;
+//   await $`unzip -j -o ${srcFile}`;
+// }
+
+
+// // make sure Rust and other deps are installed
+// // sudo apt-get update
+// // sudo apt-get install libclang-dev
+// // sudo apt-get install build-essential cmake
+
+// if (!$.fs.existsSync("sqlite-ulid")) {
+//   await $`git clone https://github.com/asg017/sqlite-ulid`;
+// }
+// await $`cd sqlite-ulid && make static-release`;
+
+// if (!$.fs.existsSync("sqlite-regex")) {
+//   await $`git clone https://github.com/asg017/sqlite-regex`;
+// }
+// await $`cd sqlite-regex && make static-release`;
+
+// // Note: Fixing a release as we're patching the sqlean fileio default initialization function name in shell.c
+// if (!$.fs.existsSync("sqlean")) {
+//   await $`git clone https://github.com/nalgeon/sqlean`;
+//   await $`cd sqlean && git checkout tags/0.21.8 && git checkout -b release_0_21_8 tags/0.21.8`
+// }
+
+// // Note: manually downloaded the cwalk zip and unzip in sqlite-path dir.
+// // ideally this should work from the cwalk submodule. raised this issue.
+// // https://github.com/asg017/sqlite-path/issues/9
+// if (!$.fs.existsSync("sqlite-path")) {
+//   await $`git clone https://github.com/asg017/sqlite-path`;
+// }
+// if (!$.fs.existsSync("sqlite-path/cwalk/cmake")) {
+//   await $`make download_cwalk`
+// }
+// await $`cd sqlite-path && make dist`
+// await $`make sqlite_path`
+// await $`make sqlite-path/dist/libsqlite_path0.a`
+
+// await $`make fileio_static_lib`
+
+// if (!$.fs.existsSync("sqlite-html")) {
+//   await $`git clone https://github.com/asg017/sqlite-html`;
+// }
+// await $`make prepare && make static_lib`
+
+// await $`cd udi-tap && make`
+
+// const destExe = `udi-sqlite`;
+// await $`make ${destExe}`;
+// await Deno.chmod(destExe, 0o666);
