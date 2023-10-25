@@ -106,24 +106,26 @@ $(LIBRARY_NAME): $(SQLITE_PATH_OBJ) $(CWALK_OBJ)
 	@echo "sqlite-path: Compiling $< to $@..."
 	$(CC) -DSQLITE_CORE $(DEFINE_SQLITE_PATH) -I$(CWALK_INCLUDE_DIR) -c $< -o $@ $(SQLITE_PATH_CFLAGS)
 
-# File IO targets.
-SRC_DIR = sqlean/src/fileio
-SRC_SQLITE3_FILEIO_C = sqlean/src/sqlite3-fileio.c
-
 clean_sqlite_path_bins:
 	rm -f $(SQLITE_PATH_OBJ) $(CWALK_OBJ) $(LIBRARY_NAME)
 
 .PHONY: all clean
 
 # Define the source directory for your C files
-FILEIO_SRC_DIR = sqlean/src/fileio
-SRC_SQLITE3_FILEIO_C = sqlean/src/sqlite3-fileio.c
+SQLEAN_SRC_DIR = sqlean/src
+FILEIO_SRC_DIR = $(SQLEAN_SRC_DIR)/fileio
+SRC_SQLITE3_FILEIO_C = $(SQLEAN_SRC_DIR)/sqlite3-fileio.c
 
 # Source files and object files
 SRC_FILES := $(wildcard $(FILEIO_SRC_DIR)/*.c) $(SRC_SQLITE3_FILEIO_C)
 #OBJ_FILES_DIR := $(patsubst %.c, %.o, $(SRC_FILES))
 OBJ_FILES_DIR := $(patsubst $(FILEIO_SRC_DIR)/%.c, $(FILEIO_SRC_DIR)/%.o, $(SRC_FILES))
 OBJ_FILES := $(OBJ_FILES_DIR)
+PATCH_SHELL_FILE := patch/sqlite3_fileio_init_resolve.patch
+
+# Source files and object files
+SRC_FILES := $(wildcard $(FILEIO_SRC_DIR)/*.c) $(SRC_SQLITE3_FILEIO_C)
+OBJ_FILES_DIR := $(patsubst %.c, %.o, $(SRC_FILES))
 
 # Compiler and flags
 CC = gcc
@@ -135,14 +137,24 @@ CFLAGS = $(LINIX_FLAGS)
 # Target library
 FILEIO_STATIC_LIB = sqlean/dist/libsqlite_fileio0.a
 
-fileio_static_lib: $(OBJ_FILES)
+patch_shell:
+	@echo "Applying patch to shell.c..."
+	patch -p1 --dry-run < $(PATCH_SHELL_FILE) >/dev/null 2>&1 && patch -p1 < $(PATCH_SHELL_FILE) || echo "Patch already applied or failed."
+
+fileio_static_lib: patch_shell $(OBJ_FILES)
 	@echo "Compiling fileio functionality into a static library..."
-	$(AR) rcs $(FILEIO_STATIC_LIB) $(OBJ_FILES)
+	@echo "Obj files add to ar: $(OBJ_FILES_DIR)"
+	@echo "Generating $(FILEIO_STATIC_LIB)"
+	$(AR) rcs $(FILEIO_STATIC_LIB) $(OBJ_FILES_DIR)
 	@echo "Static library creation completed."
 
-$(FILEIO_SRC_DIR)/%.o: $(FILEIO_SRC_DIR)/%.c | prepare_fileio_dist
+$(FILEIO_SRC_DIR)/%.o: $(FILEIO_SRC_DIR)/%.c | prepare_fileio_dist $(SQLEAN_SRC_DIR)/sqlite3-fileio.o
 	@echo "Compiling $< to $@..."
-	$(CC) -DSQLITE_CORE $(CFLAGS) -c -o $@ $^
+	$(CC) -g -DSQLITE_CORE $(CFLAGS) -c -o $@ $^
+
+$(SQLEAN_SRC_DIR)/sqlite3-fileio.o: $(SQLEAN_SRC_DIR)/sqlite3-fileio.c
+	@echo "Compiling sqlite3-fileio.c..."
+	$(CC) -g -DSQLITE_CORE $(CFLAGS) -c $< -o $@
 
 prepare_fileio_dist:
 	mkdir -p sqlean/dist
