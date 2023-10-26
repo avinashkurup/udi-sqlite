@@ -7,6 +7,11 @@ const srcFile = $.path.basename(srcURL);
 // Note: Set to the same filename in Makefile variable EXTENSION_JSON_FILENAME
 const repo_sub_extensions_filename = `repo_sub_extensions.json`
 
+if (!$.fs.existsSync(srcFile)) {
+  await $`curl -L --output ${srcFile} ${srcURL}`;
+  await $`unzip -j -o ${srcFile}`;
+}
+
 // Note: Initialize this object with the test directories/files in the cloned repo.
 // Remove python tests, because the tests will run against the sqlite3 python package,
 // not udi-sqlite executable.
@@ -28,9 +33,6 @@ const jsonString = JSON.stringify(repo_sub_extensions, null, 2); // 2 spaces for
 
 // Write the JSON string to a file
 await Deno.writeTextFile(repo_sub_extensions_filename, jsonString);
-
-// Adjust the file permissions to read-only
-await Deno.chmod(repo_sub_extensions_filename, 0o444); // 0o444 represents read-only permissions
 
 // Traverse the object
 for (const [repo, extensions] of Object.entries(repo_sub_extensions)) {
