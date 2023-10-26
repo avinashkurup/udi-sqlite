@@ -12,21 +12,45 @@ if (!$.fs.existsSync(srcFile)) {
   await $`unzip -j -o ${srcFile}`;
 }
 
-// Note: Initialize this object with the test directories/files in the cloned repo.
-// Remove python tests, because the tests will run against the sqlite3 python package,
-// not udi-sqlite executable.
-const repo_sub_extensions: {
-  [key: string]: string[] | { extensions: string[], sql_test_directory?: string, sql_test_file?: string } 
-} = {
-  "https://github.com/nalgeon/sqlean": {extensions: ["fileio", "crypto"], sql_test_directory: "sqlean/test"}, // No test_directory specified; assume a default
+export type RepoSubExtensions = {
+  [repo_url: string]: string[] | {
+    sub_extension?: string[];
+    sql_test_directory?: string;
+    sql_test_file?: string;
+  };
+};
+
+export const repo_sub_extensions: RepoSubExtensions = {
+  "https://github.com/nalgeon/sqlean": {
+    sub_extension: ["fileio", "crypto"],
+    sql_test_directory: "sqlean/test"
+  },
   "https://github.com/asg017/sqlite-ulid": {
-    extensions: ["ulid"],
     sql_test_file: "sqlite-ulid/test.sql"
   },
-  "https://github.com/asg017/sqlite-regex": {extensions: ["regex"], }, // No test_directory specified
-  "https://github.com/asg017/sqlite-path": {extensions: ["path"], },   // No test_directory specified
-  "https://github.com/asg017/sqlite-html": {extensions: ["html"], },
+  "https://github.com/asg017/sqlite-regex": {
+    sql_test_file: "custom-extension-test/sqlite-regex-tap-test.sql"
+  },
+  "https://github.com/asg017/sqlite-path": {},
+  "https://github.com/asg017/sqlite-html": {},
 };
+
+// // Note: Initialize this object with the test directories/files in the cloned repo.
+// // Remove python tests, because the tests will run against the sqlite3 python package,
+// // not udi-sqlite executable.
+// const repo_sub_extensions: {
+//   [key: string]: string[] | { sub_extension?: string[], sql_test_directory?: string, sql_test_file?: string } 
+// } = {
+//   "https://github.com/nalgeon/sqlean": {sub_extension: ["fileio", "crypto"], sql_test_directory: "sqlean/test"}, // No test_directory specified; assume a default
+//   // "https://github.com/asg017/sqlite-ulid": {
+//   //   sql_test_file: "sqlite-ulid/test.sql"
+//   // },
+//   // "https://github.com/asg017/sqlite-regex": {
+//   //   sql_test_file: "custom-extension-test/sqite-regex-tap-test.sql"
+//   // }, // No test_directory specified
+//   // "https://github.com/asg017/sqlite-path": { },   // No test_directory specified
+//   // "https://github.com/asg017/sqlite-html": { },
+// };
 
 // Convert the object to a JSON string
 const jsonString = JSON.stringify(repo_sub_extensions, null, 2); // 2 spaces for indentation
@@ -92,9 +116,6 @@ for (const [repo, extensions] of Object.entries(repo_sub_extensions)) {
     default:
       console.log(`No logic defined for repo: ${repoName}`);
       break;
-  }
-  if (!Array.isArray(extensions) && extensions.sql_test_directory) {
-    console.log(`Using test directory: ${extensions.sql_test_directory}`);
   }
 }
 

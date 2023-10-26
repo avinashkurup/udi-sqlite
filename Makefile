@@ -56,18 +56,8 @@ udi-sqlite: $(CRYPTO_STATIC_LIB) udi-sqlite-extensions.c
 INCLUDED_EXTENSIONS := sqlean-fileio sqlean-crypto sqlite-html sqlite-path sqlite-regex sqlite-ulid
 SQLEAN_TEST_DIR := sqlean/test
 
-# Use jq to read the json file and run the test files.
-# run-tests: udi-sqlite
-# 	@for dir in $(INCLUDED_EXTENSIONS); do \
-# 		TESTS=$$(find $$dir -type f -name "*.sql"); \
-# 		for test in $$TESTS; do \
-# 			if ! cat $$test | ./udi-sqlite; then \
-# 				echo "Test $$test failed!"; \
-# 			fi; \
-# 		done; \
-# 	done
-
 EXTENSION_JSON_FILENAME := repo_sub_extensions.json
+AMALGAMATION_SQL_FILE := udi-sqlite_test.sql
 
 test_file_exists:
 	@repos=$$(jq 'keys | .[]' $(EXTENSION_JSON_FILENAME)); \
@@ -90,33 +80,9 @@ test_file_exists:
 	done;
 	echo "All specified test files and directories exist.";
 
-run-extension-test: test_file_exists udi-sqlite
-	@repos=$$(jq 'keys | .[]' $(EXTENSION_JSON_FILENAME)); \
-	for repo in $$repos; do \
-		# dir_name=$$(echo $$repo | sed -e 's|https://github.com/[^/]*/||' -e 's|.git$||'); \
-		dir_name=$$(echo $$repo | sed -e 's|https://github.com/[^/]*/||' -e 's|.git||');	\
-		# extensions=$$(jq --raw-output '."$$repo".extensions | .[]' $(EXTENSION_JSON_FILENAME)); \
-		extensions=$$(jq --raw-output '."$$repo".extensions // [] | .[]' $(EXTENSION_JSON_FILENAME));	\
-		for extension in $$extensions; do \
-			SQL_TEST_FILE=$$(jq --raw-output '."$$repo".sql_test_file? // empty' $(EXTENSION_JSON_FILENAME)); \
-			SQL_TEST_DIRECTORY=$$(jq --raw-output '."$$repo".sql_test_directory? // empty' $(EXTENSION_JSON_FILENAME)); \
-			if [ "$$SQL_TEST_FILE" != "empty" ]; then \
-				cat $$dir_name/$$SQL_TEST_FILE | ./udi-sqlite; \
-				if [ $$? -ne 0 ]; then \
-					echo "Test $$SQL_TEST_FILE failed!"; \
-				fi; \
-			fi; \
-			if [ "$$SQL_TEST_DIRECTORY" != "empty" ]; then \
-				TESTS=$$(find $$dir_name/$$SQL_TEST_DIRECTORY -type f -name "*.sql"); \
-				for test in $$TESTS; do \
-					cat $$test | ./udi-sqlite; \
-					if [ $$? -ne 0 ]; then \
-						echo "Test $$test failed!"; \
-					fi; \
-				done; \
-			fi; \
-		done; \
-	done;
+run-extension-test: udi-sqlite
+	find /sqlean/test/{fileio,crypto} -type f -name '*.sql' -exec cat {} + > udi-sqlite_test.sql;
+	cat sqlite-ulid/test.sql >> udi-sqlite_test.sql;
 
 run-udi-tap: udi-sqlite
 	@OUTPUT_FILE=$$(mktemp); \
