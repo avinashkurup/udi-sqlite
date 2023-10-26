@@ -81,8 +81,9 @@ test_file_exists:
 	echo "All specified test files and directories exist.";
 
 run-extension-test: udi-sqlite
-	find /sqlean/test/{fileio,crypto} -type f -name '*.sql' -exec cat {} + > udi-sqlite_test.sql;
-	cat sqlite-ulid/test.sql >> udi-sqlite_test.sql;
+	find sqlean/test -type f \( -name "fileio*" -o -name "crypto*" \) -exec cat {} \; | grep -v '^\s*\.load' > udi-sqlite_test.sql \
+	cat sqlite-ulid/test.sql | grep -v '^\s*\.load' >> udi-sqlite_test.sql;
+	cat udi-sqlite_test.sql | ./udi-sqlite
 
 run-udi-tap: udi-sqlite
 	@OUTPUT_FILE=$$(mktemp); \
