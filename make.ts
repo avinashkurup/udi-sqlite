@@ -4,28 +4,30 @@ import $ from "https://deno.land/x/dax@0.30.1/mod.ts";
 
 const srcURL = `https://www.sqlite.org/2023/sqlite-amalgamation-3430200.zip`;
 const srcFile = $.path.basename(srcURL);
+// Note: Set to the same filename in Makefile variable EXTENSION_JSON_FILENAME
+const repo_sub_extensions_filename = `repo_sub_extensions.json`
 
-const repo_sub_extensions: { 
-  [key: string]: string[] | { extensions: string[], python_test_directory?: string, sql_test_directory?: string, test_file?: string } 
+// Note: Initialize this object with the test directories/files in the cloned repo.
+// Remove python tests, because the tests will run against the sqlite3 python package,
+// not udi-sqlite executable.
+const repo_sub_extensions: {
+  [key: string]: string[] | { extensions: string[], sql_test_directory?: string, sql_test_file?: string } 
 } = {
   "https://github.com/nalgeon/sqlean": {extensions: ["fileio", "crypto"], sql_test_directory: "sqlean/test"}, // No test_directory specified; assume a default
   "https://github.com/asg017/sqlite-ulid": {
     extensions: ["ulid"],
-    test_file: "sqlite-ulid/test.sql"
+    sql_test_file: "sqlite-ulid/test.sql"
   },
-  "https://github.com/asg017/sqlite-regex": {extensions: ["regex"], python_test_directory: "sqlite-regex/tests"}, // No test_directory specified
-  "https://github.com/asg017/sqlite-path": {extensions: ["path"], python_test_directory: "sqlite-path/tests"},   // No test_directory specified
-  "https://github.com/asg017/sqlite-html": {
-    extensions: ["html"],
-    python_test_directory: "sqlite-html/tests", test_file: "test-python.py"
-  },
+  "https://github.com/asg017/sqlite-regex": {extensions: ["regex"], }, // No test_directory specified
+  "https://github.com/asg017/sqlite-path": {extensions: ["path"], },   // No test_directory specified
+  "https://github.com/asg017/sqlite-html": {extensions: ["html"], },
 };
 
 // Convert the object to a JSON string
 const jsonString = JSON.stringify(repo_sub_extensions, null, 2); // 2 spaces for indentation
 
 // Write the JSON string to a file
-await Deno.writeTextFile("repo_sub_extensions.json", jsonString);
+await Deno.writeTextFile(repo_sub_extensions_filename, jsonString);
 
 // Traverse the object
 for (const [repo, extensions] of Object.entries(repo_sub_extensions)) {
@@ -86,7 +88,6 @@ for (const [repo, extensions] of Object.entries(repo_sub_extensions)) {
       console.log(`No logic defined for repo: ${repoName}`);
       break;
   }
-
   if (!Array.isArray(extensions) && extensions.sql_test_directory) {
     console.log(`Using test directory: ${extensions.sql_test_directory}`);
   }
@@ -96,7 +97,11 @@ await $`cd udi-tap && make`
 
 const destExe = `udi-sqlite`;
 await $`make ${destExe}`;
-await Deno.chmod(destExe, 0o666);
+//await Deno.chmod(destExe, 0o666);
+await $`chmod +x ${destExe}`    // Dont make this Linux specific.
+
+await $`make run-extension-test`
+await $`make run-udi-tap`
 
 // The type of `urls` is now a readonly tuple: readonly ["https://example.com", "https://github.com/asg017/sqlite-ulid", "https://deno.land"]
 

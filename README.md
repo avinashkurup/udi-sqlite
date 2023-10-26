@@ -14,7 +14,8 @@ Custom distribution of SQLite with enhancements tailored for `udi-service`.
 3. Install [Rust programming language](https://www.rust-lang.org/tools/install)
 4. Source the cargo binaries path as instructed.
 5. Install [Deno](https://docs.deno.com/runtime/manual/getting_started/installation)
-6. Run `$ cd udi-sqlite` and run `$ ./make.ts`
+6. Install [jq](https://jqlang.github.io/jq/download/).
+7. Run `$ cd udi-sqlite` and run `$ ./make.ts`
 
 ## To test the udi-sqlite executable.
 

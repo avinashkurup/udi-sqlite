@@ -57,42 +57,87 @@ INCLUDED_EXTENSIONS := sqlean-fileio sqlean-crypto sqlite-html sqlite-path sqlit
 SQLEAN_TEST_DIR := sqlean/test
 
 # Use jq to read the json file and run the test files.
-run-tests: udi-sqlite
-	@for dir in $(INCLUDED_EXTENSIONS); do \
-		TESTS=$$(find $$dir -type f -name "*.sql"); \
-		for test in $$TESTS; do \
-			if ! cat $$test | ./udi-sqlite; then \
-				echo "Test $$test failed!"; \
+# run-tests: udi-sqlite
+# 	@for dir in $(INCLUDED_EXTENSIONS); do \
+# 		TESTS=$$(find $$dir -type f -name "*.sql"); \
+# 		for test in $$TESTS; do \
+# 			if ! cat $$test | ./udi-sqlite; then \
+# 				echo "Test $$test failed!"; \
+# 			fi; \
+# 		done; \
+# 	done
+
+EXTENSION_JSON_FILENAME := repo_sub_extensions.json
+
+test_file_exists:
+	@repos=$$(jq 'keys | .[]' $(EXTENSION_JSON_FILENAME)); \
+	for repo in $$repos; do \
+		dir_name=$$(echo $$repo | sed -e 's|https://github.com/[^/]*/||'); \
+		SQL_TEST_FILE=$$(jq --raw-output '."$$repo".sql_test_file? // "empty"' $(EXTENSION_JSON_FILENAME)); \
+		SQL_TEST_DIRECTORY=$$(jq --raw-output '."$$repo".sql_test_directory? // "empty"' $(EXTENSION_JSON_FILENAME)); \
+		if [ "$$SQL_TEST_FILE" != "empty" ]; then \
+			if [ ! -f "$$dir_name/$$SQL_TEST_FILE" ]; then \
+				echo "Error: SQL test file \"$$dir_name/$$SQL_TEST_FILE\" does not exist!"; \
+				exit 1; \
+			fi; \
+		fi; \
+		if [ "$$SQL_TEST_DIRECTORY" != "empty" ]; then \
+			if [ ! -d "$$dir_name/$$SQL_TEST_DIRECTORY" ]; then \
+				echo "Error: SQL test directory \"$$dir_name/$$SQL_TEST_DIRECTORY\" does not exist!"; \
+				exit 1; \
+			fi; \
+		fi; \
+	done;
+	echo "All specified test files and directories exist.";
+
+run-extension-test: test_file_exists udi-sqlite
+	@repos=$$(jq 'keys | .[]' $(EXTENSION_JSON_FILENAME)); \
+	for repo in $$repos; do \
+		# dir_name=$$(echo $$repo | sed -e 's|https://github.com/[^/]*/||' -e 's|.git$||'); \
+		dir_name=$$(echo $$repo | sed -e 's|https://github.com/[^/]*/||' -e 's|.git||');	\
+		# extensions=$$(jq --raw-output '."$$repo".extensions | .[]' $(EXTENSION_JSON_FILENAME)); \
+		extensions=$$(jq --raw-output '."$$repo".extensions // [] | .[]' $(EXTENSION_JSON_FILENAME));	\
+		for extension in $$extensions; do \
+			SQL_TEST_FILE=$$(jq --raw-output '."$$repo".sql_test_file? // empty' $(EXTENSION_JSON_FILENAME)); \
+			SQL_TEST_DIRECTORY=$$(jq --raw-output '."$$repo".sql_test_directory? // empty' $(EXTENSION_JSON_FILENAME)); \
+			if [ "$$SQL_TEST_FILE" != "empty" ]; then \
+				cat $$dir_name/$$SQL_TEST_FILE | ./udi-sqlite; \
+				if [ $$? -ne 0 ]; then \
+					echo "Test $$SQL_TEST_FILE failed!"; \
+				fi; \
+			fi; \
+			if [ "$$SQL_TEST_DIRECTORY" != "empty" ]; then \
+				TESTS=$$(find $$dir_name/$$SQL_TEST_DIRECTORY -type f -name "*.sql"); \
+				for test in $$TESTS; do \
+					cat $$test | ./udi-sqlite; \
+					if [ $$? -ne 0 ]; then \
+						echo "Test $$test failed!"; \
+					fi; \
+				done; \
 			fi; \
 		done; \
-	done
+	done;
 
-# run-tests: udi-sqlite
-# 	@repos=$$(jq 'keys | .[]' extensions.json); \
-# 	for repo in $$repos; do \
-# 		dir_name=$$(echo $$repo | sed -e 's/https:\/\/github.com\///' -e 's/\//-/g'); \
-# 		if [ "$$dir_name" = "nalgeon-sqlean" ]; then \
-# 			extensions=$$(jq --raw-output '."$$repo".extensions | .[]' extensions.json); \
-# 			for extension in $$extensions; do \
-# 				TESTS=$$(find $$dir_name/$$extension -type f -name "*.sql" -o -name "*.python"); \
-# 				for test in $$TESTS; do \
-# 					cat $$test | ./udi-sqlite; \
-# 					if [ $$? -ne 0 ]; then \
-# 						echo "Test $$test failed!"; \
-# 					fi; \
-# 				done; \
-# 			done; \
-# 		else \
-# 			TEST_DIRECTORY=$$(jq --raw-output '."$$repo".test_directory // "."' extensions.json); \
-# 			TESTS=$$(find $$dir_name/$$TEST_DIRECTORY -type f -name "*.sql" -o -name "*.python"); \
-# 			for test in $$TESTS; do \
-# 				cat $$test | ./udi-sqlite; \
-# 				if [ $$? -ne 0 ]; then \
-# 					echo "Test $$test failed!"; \
-# 				fi; \
-# 			done; \
-# 		fi; \
-# 	done
+run-udi-tap: udi-sqlite
+	@OUTPUT_FILE=$$(mktemp); \
+	cat udi-tap/uditap_test.sql | ./udi-sqlite > $$OUTPUT_FILE; \
+	if [ ! -f $$OUTPUT_FILE ] || [ ! -s $$OUTPUT_FILE ]; then \
+        echo "Error: Failed to generate or capture the output."; \
+        rm -f $$OUTPUT_FILE; \
+        exit 1; \
+    fi; \
+    if [ ! -f udi-tap/test.expected ]; then \
+        echo "Error: Expected output file udi-tap/test.expected does not exist."; \
+        rm -f $$OUTPUT_FILE; \
+        exit 1; \
+    fi; \
+	if diff $$OUTPUT_FILE udi-tap/test.expected; then \
+        echo "Success: UDI TAP test output matches the expected output!"; \
+	else \
+        echo "Failure: UDI TAP test output differs from the expected output!"; \
+        exit 1; \
+    fi; \
+	rm -f $$OUTPUT_FILE
 
 CWALK_SRCS_URL = "https://github.com/likle/cwalk/archive/stable.zip"
 SQLITE_PATH_SRC_DIR = sqlite-path
