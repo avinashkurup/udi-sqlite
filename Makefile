@@ -38,6 +38,7 @@ $(CRYPTO_STATIC_LIB): $(CRYPTO_OBJ_FILES)
 	$(AR) rcs $(CRYPTO_STATIC_LIB) $(CRYPTO_OBJ_FILES)
 	@echo "Static library creation completed."
 
+UDI_TEST_STATIC_OBJ_FILE = udi-tap/libsqlite_uditap0.a
 
 udi-sqlite: $(CRYPTO_STATIC_LIB) udi-sqlite-extensions.c
 	gcc -o ./udi-sqlite	\
@@ -48,8 +49,36 @@ udi-sqlite: $(CRYPTO_STATIC_LIB) udi-sqlite-extensions.c
 		sqlean/dist/libsqlite_fileio0.a \
 		sqlite-regex/target/release/libsqlite_regex.a \
 		sqlite-html/dist/html0.a \
+		$(UDI_TEST_STATIC_OBJ_FILE) \
 		-DSQLITE_CORE -DSQLITE_SHELL_INIT_PROC=udi_sqlite_init_extensions \
 		-ldl -lpthread -lm
+
+run-extension-test: udi-sqlite
+	find sqlean/test -type f \( -name "fileio*" -o -name "crypto*" \) -exec cat {} \; | grep -v '^\s*\.load' > udi-sqlite_test.sql;
+	cat sqlite-ulid/test.sql | grep -v '^\s*\.load' >> udi-sqlite_test.sql;
+	cat custom-extension-test/sqlite-regex-tap-test.sql | grep -v '^\s*\.load' >> udi-sqlite_test.sql;
+	cat udi-sqlite_test.sql | ./udi-sqlite
+
+run-udi-tap: udi-sqlite
+	@OUTPUT_FILE=$$(mktemp); \
+	cat udi-tap/uditap_test.sql | ./udi-sqlite > $$OUTPUT_FILE; \
+	if [ ! -f $$OUTPUT_FILE ] || [ ! -s $$OUTPUT_FILE ]; then \
+        echo "Error: Failed to generate or capture the output."; \
+        rm -f $$OUTPUT_FILE; \
+        exit 1; \
+    fi; \
+    if [ ! -f udi-tap/test.expected ]; then \
+        echo "Error: Expected output file udi-tap/test.expected does not exist."; \
+        rm -f $$OUTPUT_FILE; \
+        exit 1; \
+    fi; \
+	if diff $$OUTPUT_FILE udi-tap/test.expected; then \
+        echo "Success: UDI TAP test output matches the expected output!"; \
+	else \
+        echo "Failure: UDI TAP test output differs from the expected output!"; \
+        exit 1; \
+    fi; \
+	rm -f $$OUTPUT_FILE
 
 CWALK_SRCS_URL = "https://github.com/likle/cwalk/archive/stable.zip"
 SQLITE_PATH_SRC_DIR = sqlite-path
