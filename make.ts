@@ -29,6 +29,9 @@ const jsonString = JSON.stringify(repo_sub_extensions, null, 2); // 2 spaces for
 // Write the JSON string to a file
 await Deno.writeTextFile(repo_sub_extensions_filename, jsonString);
 
+// Adjust the file permissions to read-only
+await Deno.chmod(repo_sub_extensions_filename, 0o444); // 0o444 represents read-only permissions
+
 // Traverse the object
 for (const [repo, extensions] of Object.entries(repo_sub_extensions)) {
   const repoName = repo.split('/').pop();
