@@ -21,3 +21,13 @@ Custom distribution of SQLite with enhancements tailored for `udi-service`.
 
 Run the command `make run-extension-test`
 
+## Extensions included in udi-sqlite.
+
+1. [sqlite-ulid](https://github.com/asg017/sqlite-ulid)
+2. [sqlite-regex](https://github.com/asg017/sqlite-regex)
+3. [sqlite-path](https://github.com/asg017/sqlite-path)
+4. [sqlite-html](https://github.com/asg017/sqlite-html)
+5. [sqlean-fileio](https://github.com/nalgeon/sqlean/blob/main/docs/fileio.md)
+6. [sqlean-crypto](https://github.com/nalgeon/sqlean/blob/main/docs/crypto.md)
+
+[sqlite-http](https://github.com/asg017/sqlite-http) working on a fix for this [issue](https://github.com/asg017/sqlite-http/issues/32).
