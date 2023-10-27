@@ -51,6 +51,10 @@ if (!$.fs.existsSync("sqlite-html")) {
 }
 await $`make prepare && make static_lib`
 
+await $`cd udi-tap && make sqlitetap`
+
 const destExe = `udi-sqlite`;
 await $`make ${destExe}`;
-await Deno.chmod(destExe, 0o666);
+//await Deno.chmod(destExe, 0o666);
+// TODO: use deno chmod to be OS independent.
+await $`chmod +x ${destExe}`
