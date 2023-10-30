@@ -41,7 +41,7 @@ $(CRYPTO_STATIC_LIB): $(CRYPTO_OBJ_FILES)
 UDI_TEST_STATIC_OBJ_FILE = udi-tap/libsqlite_uditap0.a
 
 udi-sqlite: $(CRYPTO_STATIC_LIB) udi-sqlite-extensions.c
-	gcc -o ./udi-sqlite	\
+	gcc -g -o ./udi-sqlite	\
 		shell.c sqlite3.c udi-sqlite-extensions.c \
 		sqlite-ulid/dist/release/libsqlite_ulid0.a \
 		sqlean/dist/libsqlite_crypto0.a \
@@ -49,6 +49,7 @@ udi-sqlite: $(CRYPTO_STATIC_LIB) udi-sqlite-extensions.c
 		sqlean/dist/libsqlite_fileio0.a \
 		sqlite-regex/target/release/libsqlite_regex.a \
 		sqlite-html/dist/html0.a \
+		sqlite-http/dist/http0.o \
 		$(UDI_TEST_STATIC_OBJ_FILE) \
 		-DSQLITE_CORE -DSQLITE_SHELL_INIT_PROC=udi_sqlite_init_extensions \
 		-ldl -lpthread -lm
@@ -57,7 +58,9 @@ run-extension-test: udi-sqlite
 	find sqlean/test -type f \( -name "fileio*" -o -name "crypto*" \) -exec cat {} \; | grep -v '^\s*\.load' > udi-sqlite_test.sql;
 	cat sqlite-ulid/test.sql | grep -v '^\s*\.load' >> udi-sqlite_test.sql;
 	cat custom-extension-test/sqlite-regex-tap-test.sql | grep -v '^\s*\.load' >> udi-sqlite_test.sql;
-	cat udi-sqlite_test.sql | ./udi-sqlite
+	cat custom-extension-test/sqlite-http-tap-test.sql | grep -v '^\s*\.load' >> udi-sqlite_test.sql;
+	cat custom-extension-test/sqlite-html-tap-test.sql | grep -v '^\s*\.load' >> udi-sqlite_test.sql;
+	#cat udi-sqlite_test.sql | ./udi-sqlite
 
 run-udi-tap: udi-sqlite
 	@OUTPUT_FILE=$$(mktemp); \
@@ -233,5 +236,21 @@ sqlite_html_clean_libs:
 
 # format:
 # 	gofmt -s -w .
+
+##### Begin HTTP extension targets and rules.
+
+HTTP_SRC_DIR = sqlite-http
+BUILD_DIR = dist
+TARGET_STATIC = $(BUILD_DIR)/libsqlite_http0.a
+OBJECT_FILES = $(BUILD_DIR)/http0.o  # ... add more object files if needed
+
+# Rule for building the object file
+$(OBJECT_FILES):
+	$(MAKE) -C $(HTTP_SRC_DIR) $@
+
+$(TARGET_STATIC): $(OBJECT_FILES)
+	ar rcs $(HTTP_SRC_DIR)/$@ $(HTTP_SRC_DIR)/$^
+
+#### End HTTP extension targets and rules.
 
 .PHONY: static-lib clean format

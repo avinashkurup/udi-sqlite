@@ -53,6 +53,12 @@ await $`make prepare && make static_lib`
 
 await $`cd udi-tap && make sqlitetap`
 
+if (!$.fs.existsSync("sqlite-http")) {
+  await $`git clone https://github.com/asg017/sqlite-http`;
+}
+//init http extension build.
+await $`make dist/libsqlite_http0.a`
+
 const destExe = `udi-sqlite`;
 await $`make ${destExe}`;
 //await Deno.chmod(destExe, 0o666);
