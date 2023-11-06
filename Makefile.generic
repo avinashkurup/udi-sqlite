@@ -1,0 +1,43 @@
+.PHONY: all c-extension go-extension python-extension typescript-extension clean
+
+all: c-extension go-extension python-extension typescript-extension
+
+c-extension:
+	$(MAKE) -C c-extension all
+
+go-extension:
+	$(MAKE) -C go-extension all
+
+python-extension:
+	cd python-extension && python setup.py build_ext --inplace
+
+typescript-extension:
+	cd typescript-extension && npm run build
+
+clean: clean-c clean-go clean-python clean-typescript
+
+clean-c:
+	$(MAKE) -C c-extension clean
+
+clean-go:
+	$(MAKE) -C go-extension clean
+
+clean-python:
+	cd python-extension && python setup.py clean --all
+
+clean-typescript:
+	cd typescript-extension && npm run clean
+
+install: install-c install-go install-python install-typescript
+
+install-c:
+	$(MAKE) -C c-extension install
+
+install-go:
+	$(MAKE) -C go-extension install
+
+install-python:
+	cd python-extension && python setup.py install
+
+install-typescript:
+	cd typescript-extension && npm install -g .

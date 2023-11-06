@@ -240,17 +240,47 @@ sqlite_html_clean_libs:
 ##### Begin HTTP extension targets and rules.
 
 HTTP_SRC_DIR = sqlite-http
-BUILD_DIR = dist
-TARGET_STATIC = $(BUILD_DIR)/libsqlite_http0.a
+BUILD_DIR = $(HTTP_SRC_DIR)/dist
 OBJECT_FILES = $(BUILD_DIR)/http0.o  # ... add more object files if needed
 
 # Rule for building the object file
 $(OBJECT_FILES):
 	$(MAKE) -C $(HTTP_SRC_DIR) $@
 
-$(TARGET_STATIC): $(OBJECT_FILES)
-	ar rcs $(HTTP_SRC_DIR)/$@ $(HTTP_SRC_DIR)/$^
-
 #### End HTTP extension targets and rules.
 
 .PHONY: static-lib clean format
+
+#### Build sqlite-extensions library #####
+
+# Go parameters
+GOCMD=go
+GOBUILD=$(GOCMD) build
+CGO_ENABLED=1
+GOOS=linux
+GOARCH=amd64
+GOFLAGS=-buildmode=c-archive
+LIB_NAME=libsqlite-extensions0.a
+PKG_NAME=.
+C_FILES=$(wildcard *.c)
+OBJ_FILES=$(C_FILES:.c=.o)
+
+# Compiler and linker flags for C
+CC=gcc
+CFLAGS=-Wall -O3 -fPIC
+LDFLAGS=
+
+# Target rules
+all: $(LIB_NAME)
+
+$(LIB_NAME): $(OBJ_FILES)
+	cd sqlite-extensions && $(GOBUILD) $(GOFLAGS) -o $(LIB_NAME) $(PKG_NAME)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+clean-libsqlite-extensions:
+	$(RM) $(LIB_NAME) $(OBJ_FILES)
+	$(GOCMD) clean
+
+.PHONY: all clean

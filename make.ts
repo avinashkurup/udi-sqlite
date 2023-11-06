@@ -53,11 +53,15 @@ await $`make prepare && make static_lib`
 
 await $`cd udi-tap && make sqlitetap`
 
+if (!$.fs.existsSync("sqlite-ext")) {
+  await $`git clone https://github.com/riyaz-ali/sqlite sqlite-extensions`;
+}
+// TODO: Add make instructions for sqlite-extensions.
+
 if (!$.fs.existsSync("sqlite-http")) {
   await $`git clone https://github.com/asg017/sqlite-http`;
 }
-//init http extension build.
-await $`make dist/libsqlite_http0.a`
+// Add make instructions for sqlite-http.
 
 const destExe = `udi-sqlite`;
 await $`make ${destExe}`;
