@@ -214,7 +214,7 @@ LOADABLE_EXTENSION=a
 endif
 
 # Directory and target setups
-TARGET_STATIC_LIB=$(prefix)/html0.$(LOADABLE_EXTENSION)
+TARGET_STATIC_LIB=$(prefix)/libhtml0.$(LOADABLE_EXTENSION)
 
 # Targets
 prepare:
