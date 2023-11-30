@@ -48,7 +48,7 @@ udi-sqlite: $(CRYPTO_STATIC_LIB) udi-sqlite-extensions.c
 		sqlite-path/dist/libsqlite_path0.a \
 		sqlean/dist/libsqlite_fileio0.a \
 		sqlite-regex/target/release/libsqlite_regex.a \
-		sqlite-html/dist/html0.a \
+		sqlite-html/dist/libhtml0.a \
 		$(UDI_TEST_STATIC_OBJ_FILE) \
 		-DSQLITE_CORE -DSQLITE_SHELL_INIT_PROC=udi_sqlite_init_extensions \
 		-ldl -lpthread -lm
